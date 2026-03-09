@@ -280,5 +280,5 @@ The application includes the following screens:
 
 # Author
 
-Student Project  
+Donald Duru
 Kigali City Services & Places Directory
