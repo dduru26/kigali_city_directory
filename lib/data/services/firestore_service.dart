@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/app_user.dart';
+import '../models/listing_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -17,5 +18,48 @@ class FirestoreService {
     }
 
     return AppUser.fromMap(doc.data()!);
+  }
+
+  Stream<List<ListingModel>> getAllListings() {
+    return _firestore
+        .collection('listings')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ListingModel.fromMap(doc.data()))
+              .toList(),
+        );
+  }
+
+  Stream<List<ListingModel>> getListingsByUser(String userId) {
+    return _firestore
+        .collection('listings')
+        .where('createdBy', isEqualTo: userId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ListingModel.fromMap(doc.data()))
+              .toList(),
+        );
+  }
+
+  Future<void> createListing(ListingModel listing) async {
+    await _firestore
+        .collection('listings')
+        .doc(listing.id)
+        .set(listing.toMap());
+  }
+
+  Future<void> updateListing(ListingModel listing) async {
+    await _firestore
+        .collection('listings')
+        .doc(listing.id)
+        .update(listing.toMap());
+  }
+
+  Future<void> deleteListing(String listingId) async {
+    await _firestore.collection('listings').doc(listingId).delete();
   }
 }
