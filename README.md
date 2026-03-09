@@ -109,3 +109,176 @@ The following technologies were used in this project:
 # Project Architecture
 
 The application follows a layered architecture that separates the UI from backend logic.
+
+UI (Screens and Widgets)
+↓
+State Management (Riverpod Controllers)
+↓
+Repositories
+↓
+Services
+↓
+Firebase (Authentication + Firestore)
+
+
+This architecture ensures that Firebase calls are not made directly inside UI widgets.
+
+---
+
+# Project Structure
+lib
+├── data
+│ ├── models
+│ │ ├── app_user.dart
+│ │ └── listing_model.dart
+│ │
+│ ├── repositories
+│ │ ├── auth_repository.dart
+│ │ └── listing_repository.dart
+│ │
+│ └── services
+│ ├── auth_service.dart
+│ ├── firestore_service.dart
+│ └── map_service.dart
+│
+├── state
+│ ├── auth
+│ │ ├── auth_controller.dart
+│ │ └── auth_state.dart
+│ │
+│ └── listings
+│ ├── listings_controller.dart
+│ ├── listings_state.dart
+│ ├── filter_controller.dart
+│ └── filter_state.dart
+│
+├── presentation
+│ ├── auth
+│ │ ├── login_screen.dart
+│ │ ├── signup_screen.dart
+│ │ ├── verify_email_screen.dart
+│ │ └── auth_gate.dart
+│ │
+│ ├── navigation
+│ │ └── home_shell.dart
+│ │
+│ └── screens
+│ ├── directory_screen.dart
+│ ├── my_listings_screen.dart
+│ ├── add_edit_listing_screen.dart
+│ ├── listing_detail_screen.dart
+│ ├── map_view_screen.dart
+│ └── settings_screen.dart
+│
+└── main.dart
+
+
+
+---
+
+# Firestore Database Structure
+
+The application uses two main collections in Firestore.
+
+## Users Collection
+users/{uid}
+
+
+Example fields:
+uid
+email
+createdAt
+notificationsEnabled
+
+
+---
+
+## Listings Collection
+listings/{listingId}
+
+
+Example fields:
+id
+name
+category
+address
+contactNumber
+description
+latitude
+longitude
+createdBy
+createdAt
+updatedAt
+
+
+Each listing is associated with the user who created it.
+
+---
+
+# How to Run the Project
+
+## 1. Clone the repository
+
+git clone <repository-url>
+
+
+---
+
+## 2. Install dependencies
+flutter pub get
+
+
+---
+
+## 3. Configure Firebase
+
+Install the FlutterFire CLI and configure Firebase.
+flutterfire configure
+
+
+This will generate the `firebase_options.dart` file.
+
+---
+
+## 4. Add Google Maps API Key
+
+Open the following file:
+android/app/src/main/AndroidManifest.xml
+
+
+Add the Google Maps API key inside the `<application>` tag.
+
+<meta-data android:name="com.google.android.geo.API_KEY" android:value="YOUR_GOOGLE_MAPS_API_KEY"/>
+
+
+---
+
+## 5. Run the application
+
+flutter run
+
+
+The application can be run using an Android emulator or a physical mobile device.
+
+---
+
+# Screens Included
+
+The application includes the following screens:
+
+- Login Screen
+- Signup Screen
+- Email Verification Screen
+- Directory Screen
+- My Listings Screen
+- Add/Edit Listing Screen
+- Listing Detail Screen
+- Map View Screen
+- Settings Screen
+
+---
+
+# Author
+
+Student Project  
+Kigali City Services & Places Directory
