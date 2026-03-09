@@ -7,6 +7,7 @@ import '../../data/repositories/user_repository.dart';
 import '../../data/services/auth_service.dart';
 import '../../data/services/firestore_service.dart';
 import 'auth_state.dart';
+import '../../data/services/map_service.dart';
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
@@ -26,6 +27,10 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
 
 final authStateChangesProvider = StreamProvider<User?>((ref) {
   return ref.read(authRepositoryProvider).authStateChanges();
+});
+
+final mapServiceProvider = Provider<MapService>((ref) {
+  return MapService();
 });
 
 final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
