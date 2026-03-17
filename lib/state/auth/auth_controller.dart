@@ -57,7 +57,7 @@ class AuthController extends StateNotifier<AuthState> {
   AuthController({required this.authRepository, required this.userRepository})
     : super(AuthState(user: authRepository.currentUser));
 
-  // #region agent log
+  // #region agent log (I’m using this for debugging)
   void _debugLog({
     required String runId,
     required String hypothesisId,
@@ -84,7 +84,7 @@ class AuthController extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
-      // #region agent log
+      // #region agent log (signup flow)
       _debugLog(
         runId: 'pre-fix',
         hypothesisId: 'A',
@@ -97,7 +97,7 @@ class AuthController extends StateNotifier<AuthState> {
       );
       // #endregion
 
-      // #region agent log
+      // #region agent log (calling FirebaseAuth)
       _debugLog(
         runId: 'pre-fix',
         hypothesisId: 'A',
@@ -109,7 +109,7 @@ class AuthController extends StateNotifier<AuthState> {
         email: email,
         password: password,
       );
-      // #region agent log
+      // #region agent log (FirebaseAuth returned)
       _debugLog(
         runId: 'pre-fix',
         hypothesisId: 'A',
@@ -122,7 +122,7 @@ class AuthController extends StateNotifier<AuthState> {
       final user = credential.user;
 
       if (user != null) {
-        // #region agent log
+        // #region agent log (creating Firestore profile)
         _debugLog(
           runId: 'pre-fix',
           hypothesisId: 'C',
@@ -139,7 +139,7 @@ class AuthController extends StateNotifier<AuthState> {
         );
 
         await userRepository.createUserProfile(appUser);
-        // #region agent log
+        // #region agent log (Firestore profile saved)
         _debugLog(
           runId: 'pre-fix',
           hypothesisId: 'C',
@@ -148,7 +148,7 @@ class AuthController extends StateNotifier<AuthState> {
         );
         // #endregion
 
-        // #region agent log
+        // #region agent log (sending verification email)
         _debugLog(
           runId: 'pre-fix',
           hypothesisId: 'D',
@@ -157,7 +157,7 @@ class AuthController extends StateNotifier<AuthState> {
         );
         // #endregion
         await authRepository.sendVerificationEmail();
-        // #region agent log
+        // #region agent log (verification call returned)
         _debugLog(
           runId: 'pre-fix',
           hypothesisId: 'D',
@@ -166,7 +166,7 @@ class AuthController extends StateNotifier<AuthState> {
         );
         // #endregion
 
-        // #region agent log
+        // #region agent log (reloading current user)
         _debugLog(
           runId: 'pre-fix',
           hypothesisId: 'E',
@@ -175,7 +175,7 @@ class AuthController extends StateNotifier<AuthState> {
         );
         // #endregion
         await authRepository.reloadCurrentUser();
-        // #region agent log
+        // #region agent log (reload returned)
         _debugLog(
           runId: 'pre-fix',
           hypothesisId: 'E',
@@ -200,7 +200,7 @@ class AuthController extends StateNotifier<AuthState> {
 
       return true;
     } on FirebaseAuthException catch (e) {
-      // #region agent log
+      // #region agent log (FirebaseAuthException)
       _debugLog(
         runId: 'pre-fix',
         hypothesisId: 'A',
@@ -215,7 +215,7 @@ class AuthController extends StateNotifier<AuthState> {
       );
       return false;
     } catch (e) {
-      // #region agent log
+      // #region agent log (non-Firebase exception)
       _debugLog(
         runId: 'pre-fix',
         hypothesisId: 'B',
@@ -236,7 +236,7 @@ class AuthController extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
-      // #region agent log
+      // #region agent log (login flow)
       _debugLog(
         runId: 'pre-fix',
         hypothesisId: 'A',
@@ -255,7 +255,7 @@ class AuthController extends StateNotifier<AuthState> {
 
       return true;
     } on FirebaseAuthException catch (e) {
-      // #region agent log
+      // #region agent log (FirebaseAuthException)
       _debugLog(
         runId: 'pre-fix',
         hypothesisId: 'A',
@@ -270,7 +270,7 @@ class AuthController extends StateNotifier<AuthState> {
       );
       return false;
     } catch (e) {
-      // #region agent log
+      // #region agent log (non-Firebase exception)
       _debugLog(
         runId: 'pre-fix',
         hypothesisId: 'B',

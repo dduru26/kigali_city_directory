@@ -1,10 +1,9 @@
 plugins {
     id("com.android.application")
-    // START: FlutterFire Configuration
+    // I’m using this to hook Firebase into the Android build.
     id("com.google.gms.google-services")
-    // END: FlutterFire Configuration
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // I keep the Flutter Gradle plugin after Android + Kotlin plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -23,10 +22,9 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // I should replace this with my own unique applicationId later.
         applicationId = "com.example.kigali_city_directory"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // I can change these values if I need different min/target SDKs, etc.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
@@ -35,8 +33,8 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // I’ll add a proper signing config for release later.
+            // For now I’m signing with debug so `flutter run --release` can work.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
