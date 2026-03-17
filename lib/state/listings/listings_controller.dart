@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -59,6 +62,7 @@ class ListingsController extends StateNotifier<ListingsState> {
   final ListingRepository listingRepository;
   final Ref ref;
   final Uuid _uuid = const Uuid();
+  static const Duration _writeTimeout = Duration(seconds: 12);
 
   ListingsController({required this.listingRepository, required this.ref})
     : super(const ListingsState());
@@ -103,7 +107,16 @@ class ListingsController extends StateNotifier<ListingsState> {
         updatedAt: null,
       );
 
-      await listingRepository.createListing(listing);
+      try {
+        await listingRepository.createListing(listing).timeout(_writeTimeout);
+      } on TimeoutException {
+        state = state.copyWith(
+          isLoading: false,
+          successMessage:
+              'Listing saved locally. It may take a moment to sync online.',
+        );
+        return true;
+      }
 
       state = state.copyWith(
         isLoading: false,
@@ -111,6 +124,12 @@ class ListingsController extends StateNotifier<ListingsState> {
       );
 
       return true;
+    } on FirebaseException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.message ?? 'Failed to create listing.',
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -148,7 +167,18 @@ class ListingsController extends StateNotifier<ListingsState> {
         updatedAt: DateTime.now(),
       );
 
-      await listingRepository.updateListing(updatedListing);
+      try {
+        await listingRepository
+            .updateListing(updatedListing)
+            .timeout(_writeTimeout);
+      } on TimeoutException {
+        state = state.copyWith(
+          isLoading: false,
+          successMessage:
+              'Update saved locally. It may take a moment to sync online.',
+        );
+        return true;
+      }
 
       state = state.copyWith(
         isLoading: false,
@@ -156,6 +186,12 @@ class ListingsController extends StateNotifier<ListingsState> {
       );
 
       return true;
+    } on FirebaseException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.message ?? 'Failed to update listing.',
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -173,11 +209,25 @@ class ListingsController extends StateNotifier<ListingsState> {
     );
 
     try {
-      await listingRepository.deleteListing(listingId);
+      try {
+        await listingRepository.deleteListing(listingId).timeout(_writeTimeout);
+      } on TimeoutException {
+        state = state.copyWith(
+          isLoading: false,
+          successMessage:
+              'Delete saved locally. It may take a moment to sync online.',
+        );
+        return;
+      }
 
       state = state.copyWith(
         isLoading: false,
         successMessage: 'Listing deleted successfully.',
+      );
+    } on FirebaseException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.message ?? 'Failed to delete listing.',
       );
     } catch (e) {
       state = state.copyWith(
