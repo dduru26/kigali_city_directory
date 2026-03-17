@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 import '../../data/models/app_user.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -23,6 +25,12 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepository(ref.read(firestoreServiceProvider));
+});
+
+final currentUserProfileProvider = FutureProvider<AppUser?>((ref) async {
+  final user = ref.watch(authControllerProvider).user;
+  if (user == null) return null;
+  return ref.read(userRepositoryProvider).getUserProfile(user.uid);
 });
 
 final authStateChangesProvider = StreamProvider<User?>((ref) {
@@ -49,18 +57,80 @@ class AuthController extends StateNotifier<AuthState> {
   AuthController({required this.authRepository, required this.userRepository})
     : super(AuthState(user: authRepository.currentUser));
 
+  // #region agent log
+  void _debugLog({
+    required String runId,
+    required String hypothesisId,
+    required String location,
+    required String message,
+    Map<String, Object?> data = const {},
+  }) {
+    try {
+      final payload = {
+        'sessionId': 'c27c06',
+        'runId': runId,
+        'hypothesisId': hypothesisId,
+        'location': location,
+        'message': message,
+        'data': data,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      };
+      debugPrint('AGENT_LOG ${jsonEncode(payload)}');
+    } catch (_) {}
+  }
+  // #endregion
+
   Future<bool> signUp({required String email, required String password}) async {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
+      // #region agent log
+      _debugLog(
+        runId: 'pre-fix',
+        hypothesisId: 'A',
+        location: 'auth_controller.dart:signUp',
+        message: 'Sign up attempt (enter)',
+        data: {
+          'emailDomain':
+              email.split('@').length == 2 ? email.split('@')[1] : 'invalid',
+        },
+      );
+      // #endregion
+
+      // #region agent log
+      _debugLog(
+        runId: 'pre-fix',
+        hypothesisId: 'A',
+        location: 'auth_controller.dart:signUp',
+        message: 'Calling FirebaseAuth createUserWithEmailAndPassword',
+      );
+      // #endregion
       final credential = await authRepository.signUp(
         email: email,
         password: password,
       );
+      // #region agent log
+      _debugLog(
+        runId: 'pre-fix',
+        hypothesisId: 'A',
+        location: 'auth_controller.dart:signUp',
+        message: 'FirebaseAuth signUp returned',
+        data: {'hasUser': credential.user != null},
+      );
+      // #endregion
 
       final user = credential.user;
 
       if (user != null) {
+        // #region agent log
+        _debugLog(
+          runId: 'pre-fix',
+          hypothesisId: 'C',
+          location: 'auth_controller.dart:signUp',
+          message: 'Creating Firestore user profile',
+          data: {'uidPrefix': user.uid.length >= 6 ? user.uid.substring(0, 6) : user.uid},
+        );
+        // #endregion
         final appUser = AppUser(
           uid: user.uid,
           email: user.email ?? email,
@@ -69,9 +139,53 @@ class AuthController extends StateNotifier<AuthState> {
         );
 
         await userRepository.createUserProfile(appUser);
-        await authRepository.sendVerificationEmail();
+        // #region agent log
+        _debugLog(
+          runId: 'pre-fix',
+          hypothesisId: 'C',
+          location: 'auth_controller.dart:signUp',
+          message: 'Firestore user profile created',
+        );
+        // #endregion
 
+        // #region agent log
+        _debugLog(
+          runId: 'pre-fix',
+          hypothesisId: 'D',
+          location: 'auth_controller.dart:signUp',
+          message: 'Sending verification email',
+        );
+        // #endregion
+        await authRepository.sendVerificationEmail();
+        // #region agent log
+        _debugLog(
+          runId: 'pre-fix',
+          hypothesisId: 'D',
+          location: 'auth_controller.dart:signUp',
+          message: 'Verification email request returned',
+        );
+        // #endregion
+
+        // #region agent log
+        _debugLog(
+          runId: 'pre-fix',
+          hypothesisId: 'E',
+          location: 'auth_controller.dart:signUp',
+          message: 'Reloading current user',
+        );
+        // #endregion
         await authRepository.reloadCurrentUser();
+        // #region agent log
+        _debugLog(
+          runId: 'pre-fix',
+          hypothesisId: 'E',
+          location: 'auth_controller.dart:signUp',
+          message: 'Reload current user returned',
+          data: {
+            'emailVerified': authRepository.currentUser?.emailVerified,
+          },
+        );
+        // #endregion
         state = state.copyWith(
           isLoading: false,
           user: authRepository.currentUser,
@@ -86,12 +200,30 @@ class AuthController extends StateNotifier<AuthState> {
 
       return true;
     } on FirebaseAuthException catch (e) {
+      // #region agent log
+      _debugLog(
+        runId: 'pre-fix',
+        hypothesisId: 'A',
+        location: 'auth_controller.dart:signUp',
+        message: 'FirebaseAuthException during sign up',
+        data: {'code': e.code, 'message': e.message},
+      );
+      // #endregion
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.message ?? 'Authentication error occurred.',
+        errorMessage: '[${e.code}] ${e.message ?? 'Authentication error occurred.'}',
       );
       return false;
     } catch (e) {
+      // #region agent log
+      _debugLog(
+        runId: 'pre-fix',
+        hypothesisId: 'B',
+        location: 'auth_controller.dart:signUp',
+        message: 'Non-Firebase exception during sign up',
+        data: {'errorType': e.runtimeType.toString()},
+      );
+      // #endregion
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Something went wrong. Please try again.',
@@ -104,6 +236,15 @@ class AuthController extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, clearError: true);
 
     try {
+      // #region agent log
+      _debugLog(
+        runId: 'pre-fix',
+        hypothesisId: 'A',
+        location: 'auth_controller.dart:login',
+        message: 'Login attempt',
+        data: {'emailDomain': email.split('@').length == 2 ? email.split('@')[1] : 'invalid'},
+      );
+      // #endregion
       await authRepository.login(email: email, password: password);
       await authRepository.reloadCurrentUser();
 
@@ -114,12 +255,30 @@ class AuthController extends StateNotifier<AuthState> {
 
       return true;
     } on FirebaseAuthException catch (e) {
+      // #region agent log
+      _debugLog(
+        runId: 'pre-fix',
+        hypothesisId: 'A',
+        location: 'auth_controller.dart:login',
+        message: 'FirebaseAuthException during login',
+        data: {'code': e.code, 'message': e.message},
+      );
+      // #endregion
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.message ?? 'Login failed.',
+        errorMessage: '[${e.code}] ${e.message ?? 'Login failed.'}',
       );
       return false;
     } catch (e) {
+      // #region agent log
+      _debugLog(
+        runId: 'pre-fix',
+        hypothesisId: 'B',
+        location: 'auth_controller.dart:login',
+        message: 'Non-Firebase exception during login',
+        data: {'errorType': e.runtimeType.toString()},
+      );
+      // #endregion
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Something went wrong. Please try again.',

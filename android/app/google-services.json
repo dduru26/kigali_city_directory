@@ -12,7 +12,20 @@
           "package_name": "com.example.kigali_city_directory"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "471108664254-nufbit00si720tka2sj5c9vmugen6isj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kigali_city_directory",
+            "certificate_hash": "abe720759bc1896e24f4efeb2b353469a666436e"
+          }
+        },
+        {
+          "client_id": "471108664254-1njj3jd3bnc4solm74fa882hpt0d0p07.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAOZXsCEbtyy-qDRdifKdgtqsAyHOBi_xY"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "471108664254-1njj3jd3bnc4solm74fa882hpt0d0p07.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "471108664254-uq2lqtgt36n475r5mmcvktnkf6dotstb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.kigaliCityDirectory"
+              }
+            }
+          ]
         }
       }
     }

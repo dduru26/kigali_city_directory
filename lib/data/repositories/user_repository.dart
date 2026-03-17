@@ -13,4 +13,14 @@ class UserRepository {
   Future<AppUser?> getUserProfile(String uid) async {
     return await _firestoreService.getUserProfile(uid);
   }
+
+  Future<void> updateUserNotifications({
+    required String uid,
+    required bool notificationsEnabled,
+  }) async {
+    await _firestoreService.updateUserNotifications(
+      uid: uid,
+      notificationsEnabled: notificationsEnabled,
+    );
+  }
 }

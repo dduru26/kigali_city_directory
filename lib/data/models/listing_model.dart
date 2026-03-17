@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ListingModel {
   final String id;
   final String name;
@@ -36,12 +38,30 @@ class ListingModel {
       'latitude': latitude,
       'longitude': longitude,
       'createdBy': createdBy,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt?.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
+      'updatedAt': updatedAt != null ? Timestamp.fromDate(updatedAt!) : null,
     };
   }
 
   factory ListingModel.fromMap(Map<String, dynamic> map) {
+    DateTime createdAt;
+    final createdAtRaw = map['createdAt'];
+    if (createdAtRaw is Timestamp) {
+      createdAt = createdAtRaw.toDate();
+    } else if (createdAtRaw is String) {
+      createdAt = DateTime.tryParse(createdAtRaw) ?? DateTime.now();
+    } else {
+      createdAt = DateTime.now();
+    }
+
+    DateTime? updatedAt;
+    final updatedAtRaw = map['updatedAt'];
+    if (updatedAtRaw is Timestamp) {
+      updatedAt = updatedAtRaw.toDate();
+    } else if (updatedAtRaw is String) {
+      updatedAt = DateTime.tryParse(updatedAtRaw);
+    }
+
     return ListingModel(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
@@ -52,10 +72,8 @@ class ListingModel {
       latitude: (map['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (map['longitude'] as num?)?.toDouble() ?? 0.0,
       createdBy: map['createdBy'] ?? '',
-      createdAt: DateTime.tryParse(map['createdAt'] ?? '') ?? DateTime.now(),
-      updatedAt: map['updatedAt'] != null
-          ? DateTime.tryParse(map['updatedAt'])
-          : null,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
   }
 

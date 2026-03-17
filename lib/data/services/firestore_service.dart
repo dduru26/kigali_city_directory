@@ -20,6 +20,16 @@ class FirestoreService {
     return AppUser.fromMap(doc.data()!);
   }
 
+  Future<void> updateUserNotifications({
+    required String uid,
+    required bool notificationsEnabled,
+  }) async {
+    await _firestore
+        .collection('users')
+        .doc(uid)
+        .update({'notificationsEnabled': notificationsEnabled});
+  }
+
   Stream<List<ListingModel>> getAllListings() {
     return _firestore
         .collection('listings')

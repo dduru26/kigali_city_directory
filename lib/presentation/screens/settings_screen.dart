@@ -3,15 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/auth/auth_controller.dart';
 
-final notificationsToggleProvider = StateProvider<bool>((ref) => false);
-
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).user;
-    final notificationsEnabled = ref.watch(notificationsToggleProvider);
+    final profileAsync = ref.watch(currentUserProfileProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -31,14 +29,36 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 24),
             Text('Preferences', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
-            SwitchListTile(
-              value: notificationsEnabled,
-              onChanged: (value) {
-                ref.read(notificationsToggleProvider.notifier).state = value;
+            profileAsync.when(
+              data: (profile) {
+                final enabled = profile?.notificationsEnabled ?? false;
+                final canToggle = user != null;
+
+                return SwitchListTile(
+                  value: enabled,
+                  onChanged: canToggle
+                      ? (value) async {
+                          await ref
+                              .read(userRepositoryProvider)
+                              .updateUserNotifications(
+                                uid: user!.uid,
+                                notificationsEnabled: value,
+                              );
+                        }
+                      : null,
+                  title: const Text('Enable location-based notifications'),
+                  subtitle: const Text(
+                    'Stored in your profile (Firestore)',
+                  ),
+                );
               },
-              title: const Text('Enable location-based notifications'),
-              subtitle: const Text(
-                'Local simulation for notification preferences',
+              loading: () => const ListTile(
+                leading: CircularProgressIndicator(),
+                title: Text('Loading preferences...'),
+              ),
+              error: (_, __) => const ListTile(
+                leading: Icon(Icons.error_outline),
+                title: Text('Could not load preferences'),
               ),
             ),
             const SizedBox(height: 24),
